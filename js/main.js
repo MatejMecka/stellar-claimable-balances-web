@@ -4,9 +4,11 @@ if (url.searchParams.get('pub')) {
 	console.log('Using Pub Network!')
 	server = new stellar.Server('https://horizon.stellar.org');
 	passphrase = stellar.Networks.PUBLIC
+	network = "public"
 } else {
 	server = new stellar.Server('https://horizon-testnet.stellar.org');
 	passphrase = stellar.Networks.TESTNET
+	network = "testnet"
 }
 
  
@@ -102,7 +104,7 @@ async function claimBalance(event){
 
     albedo.tx({
 	    xdr: tx,
-	    network: 'testnet',
+	    network: network,
 	    submit: true
 	}).then(res => console.log(res.xdr, res.tx_hash, res.signed_envelope_xdr, res.network, res.result))
 
