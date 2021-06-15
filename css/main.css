@@ -18,12 +18,17 @@ body, .login {
 	display: none;
 }
 
+#freighter-button {
+	display: none;
+	margin-top: 10px;
+}
+
 @media (prefers-color-scheme: dark) {
   body  { 
   	background: #121212; 
   }
 
-  h1, h4, h6, td, th, thead, table, tr {
+  h1, h4, h5, h6, td, th, thead, table, tr {
   	color: #FFFFFF;
   }
 }

@@ -11,8 +11,20 @@ if (url.searchParams.get('pub')) {
 	network = "testnet"
 }
 
- 
 let publicKey = undefined
+let wallet = undefined
+
+async function loginWithFreighter(){
+	await freighter.getPublicKey()
+    .then(res => {
+    	console.log(res)
+    	publicKey = res
+    	wallet = "freighter"
+    	renderClaimableBalances()
+    	document.querySelector('.login').style.display='none'
+    	document.querySelector('.balances').style.display='block'
+    })
+}
 
 async function loginWithAlbedo(){
 	albedo.publicKey({
@@ -21,6 +33,7 @@ async function loginWithAlbedo(){
     .then(res => {
     	console.log(res.pubkey, res.signed_message, res.signature)
     	publicKey = res.pubkey
+    	wallet = "albedo"
     	renderClaimableBalances()
     	document.querySelector('.login').style.display='none'
     	document.querySelector('.balances').style.display='block'
@@ -28,6 +41,7 @@ async function loginWithAlbedo(){
 }
 
 async function renderClaimableBalances(){
+	document.querySelector('#pubKey').innerText=`Account: ${publicKey}`
 	let balances = await server
     .claimableBalances()
     .claimant(publicKey)
@@ -97,17 +111,29 @@ async function claimBalance(event){
 
     let tx = new stellar.TransactionBuilder(aAccount, {fee: stellar.BASE_FEE})
     .addOperation(claimBalance)
-    .setNetworkPassphrase(stellar.Networks.TESTNET)
+    .setNetworkPassphrase(passphrase)
     .setTimeout(180)
     .build()
     .toXDR();
 
-    albedo.tx({
-	    xdr: tx,
-	    network: network,
-	    submit: true
-	}).then(res => console.log(res.xdr, res.tx_hash, res.signed_envelope_xdr, res.network, res.result))
+    if(wallet = freighter){
+    	signedTransaction = await freighter.signTransaction(tx, network.toUpperCase());
 
+    	const transactionToSubmit = stellar.TransactionBuilder.fromXDR(signedTransaction, "https://horizon-testnet.stellar.org")
+
+    	console.log(transactionToSubmit)
+
+		const response = await server.submitTransaction(transactionToSubmit)
+
+		console.log(response)
+    }
+    else {
+	    await albedo.tx({
+		    xdr: tx,
+		    network: network,
+		    submit: true
+		}).then(res => console.log(res.xdr, res.tx_hash, res.signed_envelope_xdr, res.network, res.result))
+	}
     document.querySelector('tbody').remove();
 	let new_tbody = document.createElement('tbody');
 	document.querySelector('table').appendChild(new_tbody);
@@ -116,3 +142,7 @@ async function claimBalance(event){
 }
 
 document.querySelector("#albedo-button").addEventListener("click", loginWithAlbedo)
+if (freighter.isConnected()) {
+	document.querySelector("#freighter-button").style.display='block'
+	document.querySelector("#freighter-button").addEventListener("click", loginWithFreighter)
+}
