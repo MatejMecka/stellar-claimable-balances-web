@@ -2,11 +2,13 @@ url = new URL(window.location.href);
 
 if (url.searchParams.get('pub')) {
 	console.log('Using Pub Network!')
-	server = new stellar.Server('https://horizon.stellar.org');
+	const server_url = "https://horizon.stellar.org"
+	server = new stellar.Server(server_url);
 	passphrase = stellar.Networks.PUBLIC
 	network = "public"
 } else {
-	server = new stellar.Server('https://horizon-testnet.stellar.org');
+	const server_url = 'https://horizon-testnet.stellar.org'
+	server = new stellar.Server(server_url);
 	passphrase = stellar.Networks.TESTNET
 	network = "testnet"
 }
@@ -119,7 +121,7 @@ async function claimBalance(event){
     if(wallet = freighter){
     	signedTransaction = await freighter.signTransaction(tx, network.toUpperCase());
 
-    	const transactionToSubmit = stellar.TransactionBuilder.fromXDR(signedTransaction, "https://horizon-testnet.stellar.org")
+    	const transactionToSubmit = stellar.TransactionBuilder.fromXDR(signedTransaction, server_url)
 
     	console.log(transactionToSubmit)
 
